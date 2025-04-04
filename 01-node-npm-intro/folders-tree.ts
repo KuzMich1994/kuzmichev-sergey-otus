@@ -4,7 +4,11 @@ import path from 'path';
 let dirCount = 0;
 let fileCount = 0;
 
-const tree = (dirPath: string, depth = Infinity, prefix = ''): string => {
+const tree = async (dirPath: string, depth = Infinity, prefix = ''): Promise<string> => {
+  if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+    return;
+  }
+
   if (depth < 0) {
     return;
   }
@@ -12,7 +16,7 @@ const tree = (dirPath: string, depth = Infinity, prefix = ''): string => {
   let items: fs.Dirent[];
 
   try {
-    items = fs.readdirSync(dirPath, { withFileTypes: true });
+    items = await fs.promises.readdir(dirPath, { withFileTypes: true });
   } catch (error) {
     console.error(`Ошибка: не удалось прочитать директорию ${dirPath}`);
     return;
@@ -21,17 +25,21 @@ const tree = (dirPath: string, depth = Infinity, prefix = ''): string => {
   const dirs = items.filter((item) => item.isDirectory());
   const files = items.filter((item) => item.isFile());
 
-  [...dirs, ...files].forEach((item, index, array) => {
-    const isLast = index === array.length - 1;
+  const allItems = [...dirs, ...files];
+
+  for (let index = 0; index < allItems.length; index++) {
+    const item = allItems[index];
+    const isLast = index === allItems.length - 1;
     const connector = isLast ? '└── ' : '├── ';
     console.log(prefix + connector + item.name);
     fileCount += 1;
+
     if (item.isDirectory()) {
       const newPrefix = prefix + (isLast ? '    ' : '│   ');
       dirCount += 1;
-      tree(path.join(dirPath, item.name), depth - 1, newPrefix);
+      await tree(path.join(dirPath, item.name), depth - 1, newPrefix);
     }
-  });
+  }
 }
 
 const printProjectStructure = () => {
@@ -56,9 +64,7 @@ const printProjectStructure = () => {
   }
 
   console.log(path.basename(dirPath));
-  tree(dirPath, depth);
-
-  console.log(`${dirCount} directories, ${fileCount} files`);
+  tree(dirPath, depth).then(() => console.log(`${dirCount} directories, ${fileCount} files`));
 }
 
 printProjectStructure();

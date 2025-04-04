@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node index.ts",
-    "start:tree": "ts-node folders-tree.ts ./ -d 1"
+    "start:tree": "ts-node folders-tree.ts ./ -d 6"
   },
   "bin": {
     "tree": ""
