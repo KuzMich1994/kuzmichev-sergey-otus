@@ -5,7 +5,11 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node index.ts",
-    "start:tree": "ts-node folders-tree.ts ./ -d 6"
+    "start:tree": "ts-node folders-tree.ts ./ -d 1",
+    "test": "jest ./*.ts --coverage",
+    "test:tree": "jest tree.test.ts --coverage",
+    "test:printFoldersTree": "jest print-folders-tree.test.ts --coverage",
+    "test:data-tree": "jest ./print-data-tree.test.ts --coverage"
   },
   "bin": {
     "tree": ""
@@ -14,7 +18,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
+    "jest": "^29.7.0",
+    "memfs": "^4.17.0",
+    "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }

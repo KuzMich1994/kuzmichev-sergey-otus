@@ -1,10 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 
-let dirCount = 0;
-let fileCount = 0;
+export let dirCount = 0;
+export let fileCount = 0;
 
-const tree = async (dirPath: string, depth = Infinity, prefix = ''): Promise<string> => {
+export const resetCounters = () => {
+  fileCount = 0;
+  dirCount = 0;
+};
+
+export const tree = async (
+  dirPath: string,
+  depth = Infinity,
+  prefix = '',
+  log: (line: string) => void = console.log,
+): Promise<string> => {
   if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
     return;
   }
@@ -31,23 +41,24 @@ const tree = async (dirPath: string, depth = Infinity, prefix = ''): Promise<str
     const item = allItems[index];
     const isLast = index === allItems.length - 1;
     const connector = isLast ? '└── ' : '├── ';
-    console.log(prefix + connector + item.name);
-    fileCount += 1;
+    log(prefix + connector + item.name);
+    if (item.isFile()) {
+      fileCount += 1;
+    }
 
     if (item.isDirectory()) {
       const newPrefix = prefix + (isLast ? '    ' : '│   ');
       dirCount += 1;
-      await tree(path.join(dirPath, item.name), depth - 1, newPrefix);
+      await tree(path.join(dirPath, item.name), depth - 1, newPrefix, log);
     }
   }
 }
 
-const printProjectStructure = () => {
-  const args = process.argv.slice(2);
+export const printProjectStructure = async (argv?: string[]) => {
+  const args = argv ? argv.slice(2) : process.argv.slice(2);
 
   if (args.length === 0) {
-    console.error('Ошибка: укажите путь к директории');
-    process.exit(1);
+    throw new Error('Ошибка: укажите путь к директории');
   }
 
   const dirPath = args[0];
@@ -58,13 +69,17 @@ const printProjectStructure = () => {
     depth = parseInt(args[depthIndex + 1]);
 
     if (isNaN(depth) || depth < 0) {
-      console.error('Ошибка: некорректное значение глубины');
-      process.exit(1);
+     throw new Error('Ошибка: некорректное значение глубины');
     }
   }
 
   console.log(path.basename(dirPath));
-  tree(dirPath, depth).then(() => console.log(`${dirCount} directories, ${fileCount} files`));
+  await tree(dirPath, depth).then(() => console.log(`${dirCount} directories, ${fileCount} files`));
 }
 
-printProjectStructure();
+if (require.main === module) {
+  printProjectStructure(process.argv).catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

@@ -3,7 +3,7 @@ interface Tree {
   items?: Tree[];
 }
 
-const data: Tree = {
+export const data: Tree = {
   name: 1,
   items: [
     {
@@ -34,7 +34,7 @@ const data: Tree = {
   ],
 };
 
-function printTree(node: Tree, prefix = '', step = 0) {
+export function printTree(node: Tree, prefix = '', step = 0) {
   let result = '';
 
   if (step === 0) {
